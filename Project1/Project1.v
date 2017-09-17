@@ -82,11 +82,13 @@ Qed.
   Theorem stack_duck: forall s s',
       s<>empty -> s'<>empty -> top s = top s' -> pop s = pop s' -> s=s'.
   Proof.
-  intros s.
+  intros s s'.
   intros H H0 H1 H2.
   destruct s.
-  
+  destruct s'.
+  simpl. reflexivity.
 
+  
   
     
   Theorem stack_ext: forall s, s<>empty -> (push (top s) (pop s))=s.
@@ -116,10 +118,22 @@ Qed.
   Theorem mult_S_1 : forall n m : nat,
       m = S n ->
       m * (1 + n) = m * m.
-  Admitted.
+  Proof.
+  intros m n.
+  intros H.
+  rewrite -> H.
+  simpl. omega.
+Qed.
   
   Theorem andb_true_elim2 : forall b c : bool,
       andb b c = true -> c = true.
-  Admitted.
+  Proof.
+  intros c. elim c.
+  simpl. auto.
+  intros b. elim b.
+  simpl. auto.
+  simpl. auto.
+Qed.
+  
 
 End Natstack.
