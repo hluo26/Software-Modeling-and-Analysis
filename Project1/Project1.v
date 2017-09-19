@@ -67,13 +67,11 @@ Qed.
   Theorem stack_extensionality: forall x x' s s',
       x=x' -> s=s' -> (push x s) = (push x' s').
   Proof.
-  intros.
-  destruct s.
-  rewrite -> H.
-  rewrite -> H0.
-  reflexivity.
-  rewrite -> H.
-  rewrite -> H0.
+  intros x x'.
+  intros s s'.
+  intros H H0.
+  rewrite ->H.
+  rewrite ->H0.
   reflexivity.
 Qed.
 
@@ -82,13 +80,10 @@ Qed.
   Theorem stack_duck: forall s s',
       s<>empty -> s'<>empty -> top s = top s' -> pop s = pop s' -> s=s'.
   Proof.
-  intros s s'.
-  intros H H0 H1 H2.
+  intros s.
+  intros s'.
+  intros H0 H1 H2 H3.
   destruct s.
-  destruct s'.
-  simpl. reflexivity.
-
-  
   
     
   Theorem stack_ext: forall s, s<>empty -> (push (top s) (pop s))=s.
