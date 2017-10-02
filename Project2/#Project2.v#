@@ -65,8 +65,9 @@ Module NatList.
   intros.
   induction l as [|n l'].
   reflexivity.
-  simpl. rewrite <- snoc_cons.
-  
+  simpl. rewrite -> snoc_cons.
+  rewrite ->IHl'. reflexivity.
+  Qed.
 
   Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
   l1 ++ (l2 ++ (l3 ++ l4 )) = ((l1 ++ l2 ) ++ l3 ) ++ l4.
