@@ -65,13 +65,44 @@ Module NatList.
   intros.
   induction l as [|n l'].
   reflexivity.
-  simpl. rewrite <- snoc_cons.
-  
+  simpl. rewrite -> snoc_cons.
+  rewrite ->IHl'. reflexivity.
+  Qed.
+
+  Theorem app_assoc : forall l1 l2 l3 : natlist, 
+      (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
+  Proof.
+    intros l1 l2 l3. induction l1 as [| n l1'].
+    (*  Case "l1 = nil". *)
+    simpl. reflexivity.
+    (*  Case "l1 = cons n l1'". *)
+    simpl. rewrite IHl1'. reflexivity. Qed.
 
   Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
   l1 ++ (l2 ++ (l3 ++ l4 )) = ((l1 ++ l2 ) ++ l3 ) ++ l4.
   Proof.
-  Admitted.
+  intros l1 l2 l3 l4.
+  rewrite ->app_assoc.
+  rewrite ->app_assoc.
+  reflexivity.
+  Qed.
+
+  Fixpoint nonzeros (l:natlist) : natlist :=
+  match l with
+  |nil => nil
+  |h::l' => if beq_nat h 0 then nonzeros l' else h::nonzeros l'
+  end.
+
+  Lemma nonzeros_app : forall l1 l2 : natlist,
+  nonzeros (l1 ++ l2 ) = (nonzeros l1 ) ++ (nonzeros l2 ).
+  Proof.
+  intros l1 l2.
+  induction l1.
+  simpl. reflexivity.
+  destruct n.
+  simpl. rewrite -> IHl1. reflexivity.
+  simpl. rewrite -> IHl1. reflexivity.
+  Qed.
 
   Fixpoint beq_natlist (l1 l2 : natlist) : bool :=
   match l1 with
@@ -117,14 +148,9 @@ Module NatList.
   intros l.
   induction l as [|n l'].
   simpl. reflexivity.
-  simpl. rewrite <- beq_nat_refl. 
-  rewrite <- IHl'. reflexivity.
+  rewrite -> IHl'. 
+  simpl. rewrite <-beq_nat_refl. reflexivity.
   Qed.
-
-  Lemma nonzeros_app : forall l1 l2 : natlist,
-  nonzeros (l1 ++ l2 ) = (nonzeros l1 ) ++ (nonzeros l2 ).
-  Proof.
-  Admitted.
 
   Theorem ble_n_Sn : forall n,
   leb n (S n) = true.
@@ -140,7 +166,10 @@ Module NatList.
   Fixpoint count (v:nat) (s:bag) : nat :=
   match s with
   |nil => 0
-  |h :: s' => if beq_nat v h then 1 + (count v s') else 0 + (count v s')
+  |h :: s' => match beq_nat v h with
+              |true => 1 + (count v s')  
+              |false => (count v s')
+              end
   end.
 
   Theorem count_member_nonzero : forall (s : bag),
@@ -156,14 +185,53 @@ Module NatList.
   |h :: s' => if beq_nat v h then s' else h :: (remove_one v s')
   end.
 
+
   Theorem remove_decreases_count: forall (s : bag),
   leb (count 0 (remove_one 0 s)) (count 0 s) = true.
   Proof.
   intros s.
+  induction s as [|l s'].
+  simpl. reflexivity.
+  destruct l.
+  simpl. rewrite -> ble_n_Sn. reflexivity.
+  simpl. rewrite -> IHs'. reflexivity.
+  Qed.
+
+  Definition sum := app.
+
+  Theorem bag_count_sum: forall (n : nat)(s1 s2 : bag),
+  count n s1 + count n s2 = count n (sum s1 s2).
+  Proof.
+  intros n s1 s2. induction s1 as [| l s1'].
+    reflexivity.
+    simpl. 
+    remember (beq_nat n l) as equal.
+    destruct equal.
+    rewrite <- IHs1'. reflexivity.
+    rewrite <- IHs1'. reflexivity.
+    Qed.
+    
 
   Theorem rev_injective: forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
   Proof.
-  intros l1 l2. rewrite <- rev_involutive.
-  
+  intros l1 l2.
+  intros H.
+  destruct l1.
+  destruct l2.
+  reflexivity.
+  rewrite <- rev_involutive.
+  rewrite <- H.
+  simpl. reflexivity.
+  destruct l2.
+  rewrite <- rev_involutive.
+  rewrite <- H.
+  simpl. rewrite -> snoc_cons.
+  rewrite -> rev_involutive.
+  reflexivity.
+  rewrite <- rev_involutive.
+  rewrite <- H.
+  rewrite -> rev_involutive.
+  reflexivity.
+  Qed.
 
 End NatList.
