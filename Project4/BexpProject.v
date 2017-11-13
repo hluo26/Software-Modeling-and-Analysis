@@ -166,7 +166,9 @@ Inductive bevalR : bexp -> bool -> Prop :=
   | E_BTrue: bevalR (BTrue) true
   | E_BFalse: bevalR (BFalse) false
   | E_BEq: forall (l r:aexp)(m n:nat) , aevalR l m -> aevalR r n -> bevalR(BEq l r)(beq_nat m n)
-  | 
+  | E_BLe: forall (l r:aexp)(m n:nat) , aevalR l m -> aevalR r n -> bevalR(BLe l r)(ble_nat m n)
+  | E_BNot: forall (l:bexp)(m:bool), bevalR l m -> bevalR(BNot l)(negb m)
+  | E_BAnd: forall (l r:bexp)(m n:bool), bevalR l m -> bevalR r n -> bevalR(BAnd l r)(andb m n).
   
 
 Hint Constructors bevalR.
@@ -185,12 +187,30 @@ Qed.
   defition.  The proof above will give you an idea of how to proceed.  *)
 
 Theorem beval_correct: forall b, bevalR b (beval b).
-Admitted.  
+Proof.
+intros.
+induction b.
+simpl. eapply E_BTrue.
+simpl. eapply E_BFalse.
+simpl. eapply E_BEq. eapply aeval_correct. eapply aeval_correct.
+simpl. eapply E_BLe. eapply aeval_correct. eapply aeval_correct.
+simpl. eapply E_BNot. apply IHb.
+simpl. eapply E_BAnd. apply IHb1. apply IHb2.
+Qed.
 
 (** Exercise 7: Prove the optimization is correct with respect to the
   relational definition.  This proof is not trivial, but still doable.  *)
 
 Theorem opt_0plus_correct: forall a, bevalR a (beval (opt_0plus_b a)).
-Admitted.
+Proof.
+intros.
+induction a.
+simpl. eapply E_BTrue.
+simpl. eapply E_BFalse.
+simpl. eapply E_BEq. rewrite opt_0plus_sound. eapply aeval_correct. rewrite opt_0plus_sound. eapply aeval_correct.
+simpl. eapply E_BLe. rewrite opt_0plus_sound. eapply aeval_correct. rewrite opt_0plus_sound. eapply aeval_correct.
+simpl. eapply E_BNot. rewrite opt_0plus_b_sound. eapply beval_correct.
+simpl. eapply E_BAnd. apply IHa1. apply IHa2.
+Qed.
 
 End Bexp.
